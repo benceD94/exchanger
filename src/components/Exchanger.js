@@ -10,14 +10,15 @@ class Exchanger extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      exchangeValue: 0,
+      exchangeFromValue: 0,
+      exchangeToValue: 0,
       exchangeFrom: "USD",
       exchangeTo: "EUR"
     };
   }
 
   exchangeMoney = () => {
-    const exchangeResultValue = this.state.exchangeValue * this.props.exchangeRates[this.state.exchangeFrom][this.state.exchangeTo];
+    const exchangeResultValue = this.state.exchangeFromValue * this.props.exchangeRates[this.state.exchangeFrom][this.state.exchangeTo];
 
     switch (this.state.exchangeTo) {
       case 'EUR':
@@ -33,13 +34,13 @@ class Exchanger extends React.Component {
 
     switch (this.state.exchangeFrom) {
       case 'EUR':
-        this.props.addToEurWallet(this.state.exchangeValue * -1);
+        this.props.addToEurWallet(this.state.exchangeFromValue * -1);
         break;
       case 'USD':
-        this.props.addToUsdWallet(this.state.exchangeValue * -1);
+        this.props.addToUsdWallet(this.state.exchangeFromValue * -1);
         break;
       case 'GBP':
-        this.props.addToGbpWallet(this.state.exchangeValue * -1);
+        this.props.addToGbpWallet(this.state.exchangeFromValue * -1);
         break;
     }
   }
@@ -78,12 +79,22 @@ class Exchanger extends React.Component {
 
     const handleNumberChange = (e) => {
       const t = e.target.value;
-      e.target.value = (t.indexOf(".") >= 0) ? (t.substr(0, t.indexOf(".")) + t.substr(t.indexOf("."), 3)) : t;
-      const name = e.target.name;
-      this.setState({
-        ...this.state,
-        [name]: e.target.value,
-      });
+      const newValue = (t.indexOf(".") >= 0) || t < 0 ? (t.substr(0, t.indexOf(".")) + t.substr(t.indexOf("."), 3)) : t;
+      if (newValue && newValue.length) {
+        if (e.target.name === "exchangeFromValue") {
+          this.setState({
+            ...this.state,
+            exchangeFromValue: newValue,
+            exchangeToValue: Number(newValue * this.props.exchangeRates[this.state.exchangeFrom][this.state.exchangeTo]).toFixed(2)
+          });
+        } else {
+          this.setState({
+            ...this.state,
+            exchangeFromValue: Number(newValue / this.props.exchangeRates[this.state.exchangeFrom][this.state.exchangeTo]).toFixed(2),
+            exchangeToValue: newValue
+          });
+        }
+      }
     };
 
     return (
@@ -94,8 +105,9 @@ class Exchanger extends React.Component {
               type="number"
               label={`Exchange from ${this.state.exchangeFrom}`}
               onChange={handleNumberChange}
+              value={this.state.exchangeFromValue}
               inputProps={{
-                name: 'exchangeValue',
+                name: 'exchangeFromValue',
                 id: 'exchange-value-input',
               }}
             />
@@ -108,14 +120,14 @@ class Exchanger extends React.Component {
                 id: 'exchange-from-selector',
               }}
             >
-              <option value={'USD'}>USD</option>
-              <option value={'EUR'}>EUR</option>
-              <option value={'GBP'}>GBP</option>
+              <option value={'USD'} disabled={this.state.exchangeTo === 'USD'}>USD</option>
+              <option value={'EUR'} disabled={this.state.exchangeTo === 'EUR'}>EUR</option>
+              <option value={'GBP'} disabled={this.state.exchangeTo === 'GBP'}>GBP</option>
             </NativeSelect>
           </form>
         </Grid>
         <Grid item>
-          <IconButton disabled={this.props.wallet[this.state.exchangeFrom] < this.state.exchangeValue} aria-label="exchange" color="primary" onClick={() => this.exchangeMoney()}>
+          <IconButton disabled={this.props.wallet[this.state.exchangeFrom] < this.state.exchangeFromValue} aria-label="exchange" color="primary" onClick={() => this.exchangeMoney()}>
             <SyncIcon />
           </IconButton>
           <div>
@@ -124,9 +136,16 @@ class Exchanger extends React.Component {
         </Grid>
         <Grid item>
           <form noValidate autoComplete="off">
-            <p>
-            {Number(this.state.exchangeValue * this.props.exchangeRates[this.state.exchangeFrom][this.state.exchangeTo]).toFixed(2)}
-            </p>
+            <TextField
+              type="number"
+              label={`Exchange to ${this.state.exchangeTo}`}
+              onChange={handleNumberChange}
+              value={this.state.exchangeToValue}
+              inputProps={{
+                name: 'exchangeToValue',
+                id: 'exchange-to-value-input',
+              }}
+            />
             <InputLabel id="exchange-to-selector-label">Select currency</InputLabel>
             <NativeSelect
               value={this.state.exchangeTo}
@@ -136,9 +155,9 @@ class Exchanger extends React.Component {
                 id: 'exchange-from-selector',
               }}
             >
-              <option value={'USD'}>USD</option>
-              <option value={'EUR'}>EUR</option>
-              <option value={'GBP'}>GBP</option>
+              <option value={'USD'} disabled={this.state.exchangeFrom === 'USD'}>USD</option>
+              <option value={'EUR'} disabled={this.state.exchangeFrom === 'EUR'}>EUR</option>
+              <option value={'GBP'} disabled={this.state.exchangeFrom === 'GBP'}>GBP</option>
             </NativeSelect>
           </form>
         </Grid>
