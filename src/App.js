@@ -1,7 +1,6 @@
 import React from 'react';
 import { Divider, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import './App.css';
 
 import Wallet from './components/Wallet';
 import Exchanger from './components/Exchanger';
@@ -18,7 +17,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Exchanger</h1>
+      <h1 style={{textAlign: "center"}}>Exchanger</h1>
       <Grid container spacing={5} alignContent="center" justify="center">
         <Grid item>
           <Wallet currency="EUR" />

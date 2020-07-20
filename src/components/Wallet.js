@@ -14,6 +14,10 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+/**
+ * Render a wallet with content from store
+ * @param {*} props 
+ */
 function Wallet(props) {
   const classes = useStyles();
 
@@ -25,6 +29,11 @@ function Wallet(props) {
   );
 }
 
+/**
+ * Get Wallet information from store
+ * @param {*} state 
+ * @param {*} ownProps 
+ */
 const mapStateToProps = (state, ownProps) => {
   const walletContent = getWalletForCurrency(state, ownProps.currency);
   return { walletContent }

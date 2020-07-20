@@ -17,9 +17,15 @@ class Exchanger extends React.Component {
     };
   }
 
+  /**
+   * Move money between wallets
+   */
   exchangeMoney = () => {
     const exchangeResultValue = this.state.exchangeFromValue * this.props.exchangeRates[this.state.exchangeFrom][this.state.exchangeTo];
 
+    /**
+     * Add money to wallet selected from user
+     */
     switch (this.state.exchangeTo) {
       case 'EUR':
         this.props.addToEurWallet(exchangeResultValue);
@@ -32,6 +38,9 @@ class Exchanger extends React.Component {
         break;
     }
 
+    /**
+     * Remove money to wallet selected from user
+     */
     switch (this.state.exchangeFrom) {
       case 'EUR':
         this.props.addToEurWallet(this.state.exchangeFromValue * -1);
@@ -45,10 +54,18 @@ class Exchanger extends React.Component {
     }
   }
 
+  /**
+   * Fetch exchange rate from API
+   * @param {String} base Base currency for Exchange
+   * @param {String} symbols Currencies to be loaded for exchange (reduces data by not loading all currencies)
+   */
   getExchangeRate(base, symbols) {
     return axios.get(`https://api.exchangeratesapi.io/latest?base=${base}&symbols=${symbols}`);
   }
 
+  /**
+   * Call getExchangeRate for all currencies in wallet
+   */
   watchExchangeRate() {
     this.getExchangeRate('EUR', 'USD,GBP').then(res => {
       this.props.changeRateForEur(res.data.rates);
@@ -61,6 +78,9 @@ class Exchanger extends React.Component {
     });
   }
 
+  /**
+   * Trigger exchange rate fetch every 10 seconds
+   */
   componentDidMount() {
     this.watchExchangeRate();
     setInterval(() => {
@@ -69,6 +89,10 @@ class Exchanger extends React.Component {
   }
 
   render() {
+    /**
+     * On select change, update state
+     * @param {Event} e Select input change event
+     */
     const handleCurrencyChange = (e) => {
       const name = e.target.name;
       this.setState({
@@ -77,6 +101,12 @@ class Exchanger extends React.Component {
       });
     };
 
+    /**
+     * On input change, update input on the other side.
+     * Only allow 2 digits after the decimal sign.
+     * Don't allow negative value.
+     * @param {Event} e Select input change event
+     */
     const handleNumberChange = (e) => {
       const t = e.target.value;
       const newValue = (t.indexOf(".") >= 0) || t < 0 ? (t.substr(0, t.indexOf(".")) + t.substr(t.indexOf("."), 3)) : t;
@@ -166,6 +196,10 @@ class Exchanger extends React.Component {
   }
 }
 
+/**
+ * Load echangeRates and wallet from store
+ * @param {*} state 
+ */
 const mapStateToProps = (state) => {
   const exchangeRates = getExchangeRates(state);
   const wallet = getWallet(state);
